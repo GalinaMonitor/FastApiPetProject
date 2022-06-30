@@ -1,0 +1,46 @@
+version: '3.9'
+
+networks:
+  market:
+    external: true
+    name: market
+
+services:
+  postgres:
+    networks:
+      market:
+        ipv4_address: 172.19.0.100
+#      network:
+#        ipv4_address: 11.1.0.100
+    image: postgres:13.3
+    container_name: postgres
+    env_file:
+      - ./deploy/postgresql.env
+    #    volumes:
+    #      - /data/postgresql:/var/lib/postgresql/data
+    #      - ./deploy/postgresql.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U market -d market_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  backend:
+    networks:
+      market:
+        ipv4_address: 172.19.0.12
+#      network:
+#        ipv4_address: 11.1.0.11
+    build: .
+    container_name: backend
+    env_file:
+      - ./deploy/backend.env
+    tty: true
+    ports:
+      - "80:8000"
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
