@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import Union, Optional
 from uuid import UUID
 
-from market.models.operations import Error, ShopUnit, ShopUnitImportRequest, ShopUnitStatisticResponse
+from market.models.operations import Error, ShopUnit, ShopUnitImportRequest, ShopUnitStatisticResponse, ShopUnitDB, \
+	ShopUnitDBRead
 from market.services.shop_unit_operations import ShopUnitService
 
 router = APIRouter()
@@ -26,11 +27,12 @@ async def post_imports(body: ShopUnitImportRequest = None, service: ShopUnitServ
 
 @router.get(
 	'/nodes/{id}',
-	response_model=ShopUnit,
+	response_model=ShopUnitDBRead,
 	responses={'400': {'model': Error}, '404': {'model': Error}},
 )
-async def get_nodes_id(id: UUID, service: ShopUnitService = Depends()) -> Union[ShopUnit, Error]:
-	return await service.get_shop_unit(id)
+async def get_nodes_id(id: UUID, service: ShopUnitService = Depends()) -> Union[ShopUnitDB, Error]:
+	result = await service.get_shop_unit(id)
+	return result
 
 
 @router.get(
@@ -41,16 +43,3 @@ async def get_nodes_id(id: UUID, service: ShopUnitService = Depends()) -> Union[
 async def get_sales(date: datetime, service: ShopUnitService = Depends()) -> Union[ShopUnitStatisticResponse, Error]:
 	return await service.get_shop_unit_with_datefilter(date)
 
-
-@router.get(
-	'/node/{id}/statistic',
-	response_model=ShopUnitStatisticResponse,
-	responses={'400': {'model': Error}, '404': {'model': Error}},
-)
-async def get_node_id_statistic(
-		id: UUID,
-		service: ShopUnitService = Depends(),
-		date_start: Optional[datetime] = Query(None, alias='dateStart'),
-		date_end: Optional[datetime] = Query(None, alias='dateEnd'),
-) -> Union[ShopUnitStatisticResponse, Error]:
-	return await service.get_shop_unit_statistic(id, date_start, date_end)

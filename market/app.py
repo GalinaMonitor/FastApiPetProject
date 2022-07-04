@@ -13,9 +13,9 @@ app = FastAPI(
 
 app.include_router(router)
 
-# @app.exception_handler(NotFoundException)
-# async def not_found_exception_handler(request: Request, exc: NotFoundException):
-# 	return JSONResponse(
-# 		status_code=404,
-# 		content=exc.body
-# 	)
+@app.exception_handler(NotFoundException)
+async def not_found_exception_handler(request: Request, exc: NotFoundException):
+	return JSONResponse(
+		status_code=404,
+		content=exc.body
+	)
